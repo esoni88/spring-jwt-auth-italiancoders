@@ -8,10 +8,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-
+/**
+ * Created by stephan on 20.03.16.
+ */
 public class JwtUser implements UserDetails {
 
-    private static final long serialVersionUID = 1L;
     private final Long id;
     private final String username;
     private final String firstname;
@@ -19,7 +20,8 @@ public class JwtUser implements UserDetails {
     private final String password;
     private final String email;
     private final Collection<? extends GrantedAuthority> authorities;
-
+    private final boolean enabled;
+    private final Date lastPasswordResetDate;
 
     public JwtUser(
             Long id,
@@ -27,7 +29,9 @@ public class JwtUser implements UserDetails {
             String firstname,
             String lastname,
             String email,
-            String password, Collection<? extends GrantedAuthority> authorities
+            String password, Collection<? extends GrantedAuthority> authorities,
+            boolean enabled,
+            Date lastPasswordResetDate
     ) {
         this.id = id;
         this.username = username;
@@ -36,7 +40,8 @@ public class JwtUser implements UserDetails {
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-
+        this.enabled = enabled;
+        this.lastPasswordResetDate = lastPasswordResetDate;
     }
 
     @JsonIgnore
@@ -90,13 +95,13 @@ public class JwtUser implements UserDetails {
         return authorities;
     }
 
-    /*
-        Customizzare il metodo isEnabled per implementare logiche di abilitazione utente
-     */
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
-
+    @JsonIgnore
+    public Date getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
 }

@@ -1,5 +1,4 @@
 package it.italiancoders.jwt.security;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,8 +7,6 @@ import it.italiancoders.jwt.model.User;
 import it.italiancoders.jwt.security.dto.JwtUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-
 
 public final class JwtUserFactory {
 
@@ -24,7 +21,9 @@ public final class JwtUserFactory {
                 user.getLastname(),
                 user.getEmail(),
                 user.getPassword(),
-                mapToGrantedAuthorities(user.getAuthorities())
+                mapToGrantedAuthorities(user.getAuthorities()),
+                user.getEnabled(),
+                user.getLastPasswordResetDate()
         );
     }
 
