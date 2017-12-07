@@ -12,8 +12,7 @@ public class Authority {
 
     @Id
     @Column(name = "ID")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "authority_seq")
-    @SequenceGenerator(name = "authority_seq", sequenceName = "authority_seq", allocationSize = 1)
+    @GeneratedValue
     private Long id;
 
     @Column(name = "NAME", length = 50)
