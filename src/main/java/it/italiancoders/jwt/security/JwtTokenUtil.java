@@ -1,18 +1,23 @@
 package it.italiancoders.jwt.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import it.italiancoders.jwt.security.dto.JwtUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mobile.device.Device;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenUtil implements Serializable {
@@ -21,7 +26,9 @@ public class JwtTokenUtil implements Serializable {
 
     static final String CLAIM_KEY_USERNAME = "sub";
     static final String CLAIM_KEY_AUDIENCE = "audience";
-    static final String CLAIM_KEY_CREATED = "created";
+    static final String CLAIM_KEY_CREATED = "iat";
+    static final String CLAIM_KEY_AUTHORITIES = "roles";
+    static final String CLAIM_KEY_IS_ENABLED = "isEnabled";
 
     private static final String AUDIENCE_UNKNOWN = "unknown";
     private static final String AUDIENCE_WEB = "web";
@@ -30,6 +37,9 @@ public class JwtTokenUtil implements Serializable {
 
     @Value("${jwt.secret}")
     private String secret;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Value("${jwt.expiration}")
     private Long expiration;
@@ -43,6 +53,30 @@ public class JwtTokenUtil implements Serializable {
             username = null;
         }
         return username;
+    }
+
+    public JwtUser getUserDetails(String token) {
+
+        if(token == null){
+            return null;
+        }
+        try {
+            final Claims claims = getClaimsFromToken(token);
+            List<SimpleGrantedAuthority> authorities = null;
+            if (claims.get(CLAIM_KEY_AUTHORITIES) != null) {
+                authorities = ((List<String>) claims.get(CLAIM_KEY_AUTHORITIES)).stream().map(role-> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
+            }
+
+            return new JwtUser(
+                    claims.getSubject(),
+                    "",
+                    authorities,
+                    (boolean) claims.get(CLAIM_KEY_IS_ENABLED)
+            );
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 
     public Date getCreatedDateFromToken(String token) {
@@ -117,19 +151,25 @@ public class JwtTokenUtil implements Serializable {
         return (AUDIENCE_TABLET.equals(audience) || AUDIENCE_MOBILE.equals(audience));
     }
 
-    public String generateToken(UserDetails userDetails, Device device) {
+    public String generateToken(UserDetails userDetails, Device device) throws JsonProcessingException {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
         claims.put(CLAIM_KEY_AUDIENCE, generateAudience(device));
         claims.put(CLAIM_KEY_CREATED, new Date());
+        List<String> auth =userDetails.getAuthorities().stream().map(role-> role.getAuthority()).collect(Collectors.toList());
+        claims.put(CLAIM_KEY_AUTHORITIES, auth);
+        claims.put(CLAIM_KEY_IS_ENABLED,userDetails.isEnabled());
+
         return generateToken(claims);
     }
 
     String generateToken(Map<String, Object> claims) {
+        ObjectMapper mapper = new ObjectMapper();
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(generateExpirationDate())
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
@@ -153,8 +193,6 @@ public class JwtTokenUtil implements Serializable {
     public Boolean validateToken(String token, UserDetails userDetails) {
         JwtUser user = (JwtUser) userDetails;
         final String username = getUsernameFromToken(token);
-        final Date created = getCreatedDateFromToken(token);
-        //final Date expiration = getExpirationDateFromToken(token);
         return (
                 username.equals(user.getUsername())
                         && !isTokenExpired(token));

@@ -63,10 +63,7 @@ public class JwtApplication {
 
 				user = new User();
 				user.setAuthorities(authorities);
-				user.setEmail("dario@prova.it");
 				user.setEnabled(true);
-				user.setFirstname("dario");
-				user.setLastname("frongi");
 				user.setUsername("admin");
 				user.setPassword(passwordEncoder.encode("admin"));
 

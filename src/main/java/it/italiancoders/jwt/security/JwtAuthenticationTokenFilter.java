@@ -7,8 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    //private final Log logger = LogFactory.getLog(this.getClass());
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -36,13 +33,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         String authToken = request.getHeader(this.tokenHeader);
 
-        String username = jwtTokenUtil.getUsernameFromToken(authToken);
+        UserDetails userDetails = jwtTokenUtil.getUserDetails(authToken);
 
+        if (userDetails != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Ricostruisco l userdetails con i dati contenuti nel token
 
-            // Non sarebbe stato necessario caricare l user details dal database se tutte le info necessarie per costruire userdetails fossero nel token
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             // controllo integrita' token
             if (jwtTokenUtil.validateToken(authToken, userDetails)) {

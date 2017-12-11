@@ -22,11 +22,8 @@ import javax.validation.constraints.Size;
 @Table(name = "USERS")
 public class User {
 
-    @Id
-    @GeneratedValue
-    @Column(name = "ID")
-    private Long id;
 
+    @Id
     @Column(name = "USERNAME", length = 50, unique = true)
     @NotNull
     @Size(min = 4, max = 50)
@@ -37,18 +34,6 @@ public class User {
     @Size(min = 4, max = 100)
     private String password;
 
-    @Column(name = "FIRSTNAME", length = 50)
-    @Size(min = 4, max = 50)
-    private String firstname;
-
-    @Column(name = "LASTNAME", length = 50)
-    @Size(min = 4, max = 50)
-    private String lastname;
-
-    @Column(name = "EMAIL", length = 50)
-    @Size(min = 4, max = 50)
-    private String email;
-
     @Column(name = "ENABLED")
     @NotNull
     private Boolean enabled;
@@ -56,17 +41,10 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "USERS_AUTHORITIES",
-            joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
+            joinColumns = {@JoinColumn(name = "USER_USERNAME", referencedColumnName = "USERNAME")},
             inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")})
     private List<Authority> authorities;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getUsername() {
         return username;
@@ -84,29 +62,6 @@ public class User {
         this.password = password;
     }
 
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public Boolean getEnabled() {
         return enabled;

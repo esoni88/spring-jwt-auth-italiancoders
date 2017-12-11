@@ -13,38 +13,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class JwtUser implements UserDetails {
 
-    private final Long id;
     private final String username;
-    private final String firstname;
-    private final String lastname;
     private final String password;
-    private final String email;
     private final Collection<? extends GrantedAuthority> authorities;
     private final boolean enabled;
 
     public JwtUser(
-            Long id,
             String username,
-            String firstname,
-            String lastname,
-            String email,
             String password, Collection<? extends GrantedAuthority> authorities,
             boolean enabled
     ) {
-        this.id = id;
         this.username = username;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
         this.password = password;
         this.authorities = authorities;
         this.enabled = enabled;
     }
 
-    @JsonIgnore
-    public Long getId() {
-        return id;
-    }
 
     @Override
     public String getUsername() {
@@ -69,17 +53,6 @@ public class JwtUser implements UserDetails {
         return true;
     }
 
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 
     @JsonIgnore
     @Override
